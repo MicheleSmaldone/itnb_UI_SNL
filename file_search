@@ -1,0 +1,4 @@
+query=".tsx"
+explanation="Looking for any duplicate or backup TypeScript files."
+query=".gitignore"
+explanation="Looking for the .gitignore file to check what's being excluded from version control." 

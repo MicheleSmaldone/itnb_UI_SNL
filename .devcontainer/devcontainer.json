@@ -1,0 +1,19 @@
+{
+    "build": {
+      "dockerfile": "../Dockerfile",
+      "target": "dev"
+    },
+  
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "dbaeumer.vscode-eslint",
+          "ms-azuretools.vscode-docker"
+        ]
+      }
+    },
+
+    "postStartCommand": "nginx",
+  
+    "appPort": "8081:80"
+  }

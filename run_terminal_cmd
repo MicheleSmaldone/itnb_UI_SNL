@@ -1,0 +1,34 @@
+command="git status"
+explanation="Checking the current status of your repository to see if the commit is complete."
+is_background=false
+require_user_approval=false
+
+command="git log --oneline -n 5"
+explanation="Viewing the most recent commits to confirm the latest commit."
+is_background=false
+require_user_approval=true
+
+command="cat package.json | grep textarea"
+explanation="Checking if react-textarea-autosize is in package.json"
+is_background=false
+require_user_approval=false
+
+command="rm -rf node_modules && rm -rf .next && npm install && npm install react-textarea-autosize"
+explanation="Cleaning and reinstalling all dependencies"
+is_background=false
+require_user_approval=true
+
+command="npm run dev"
+explanation="Starting the development server"
+is_background=true
+require_user_approval=true
+
+command="npm install recharts@2.12.2 --save"
+explanation="Installing a specific version of recharts that's compatible with Next.js"
+is_background=false
+require_user_approval=true
+
+command="rm -rf .next && npm install"
+explanation="Cleaning Next.js cache and reinstalling dependencies"
+is_background=false
+require_user_approval=true 

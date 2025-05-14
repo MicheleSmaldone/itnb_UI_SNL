@@ -1,0 +1,2 @@
+query="export function"
+explanation="Looking for exported functions to identify potentially unused components." 
