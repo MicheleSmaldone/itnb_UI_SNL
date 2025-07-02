@@ -5,6 +5,7 @@ import { Send, ArrowDown, ArrowRight, Paperclip, Upload, Trash2, ThumbsUp, Thumb
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { FileUpload } from "./file-upload"
 import { API_ENDPOINTS, fetchApi, ChatResponse, ChatHistoryItem, UploadFileResponse, ImageResponse } from "@/app/config/api"
+import { parseSourcesInText } from '@/lib/utils'
 
 interface Message {
   role: "user" | "assistant"
@@ -180,36 +181,62 @@ export function ChatInterface({ chatId = null }: ChatInterfaceProps) {
     }
 
     try {
-      // Get history from previous messages
+      // Get history from previous messages and convert to string format
       const history = getHistoryFromMessages(messages)
+      const historyString = history.map(item => 
+        `User: ${item.question}\nAssistant: ${item.answer}`
+      ).join('\n\n')
       
-      // Make a single request - no retries
-      const response = await fetchApi(API_ENDPOINTS.chat, {
+      // Log the outgoing request
+      console.log('Sending message:', input)
+      console.log('Request payload:', { message: input, history: historyString })
+
+      const res = await fetch('/api/chat', {
         method: 'POST',
-        body: JSON.stringify({
-          question: userMessage.content,
-          history: history
-        })
+        body: JSON.stringify({ message: input, history: historyString }),
+        headers: { 'Content-Type': 'application/json' }
       });
 
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: response.answer,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        images: response.images
+      let data;
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        data = { error: await res.text() };
       }
 
-      setMessages(prev => [...prev, assistantMessage])
+      console.log('Raw backend response:', data);
+
+      if (!res.ok || data.error) {
+        const errorMessage = {
+          role: "assistant" as const,
+          content: typeof data === 'object' && data.error
+            ? `Error: ${data.error}`
+            : "I apologize, but I encountered an error processing your request. Please try again.",
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        setMessages(prev => [...prev, errorMessage]);
+        return;
+      }
+
+      const response = data.response;
+      const assistantMessage = {
+        role: "assistant" as const,
+        content: response,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        images: response.images
+      };
+      setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
-      const errorMessage: Message = {
-        role: "assistant",
+      const errorMessage = {
+        role: "assistant" as const,
         content: error instanceof Error 
           ? `Error: ${error.message}`
           : "I apologize, but I encountered an error processing your request. Please try again.",
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      }
-      setMessages(prev => [...prev, errorMessage])
+      };
+      setMessages(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false)
     }
@@ -352,8 +379,31 @@ export function ChatInterface({ chatId = null }: ChatInterfaceProps) {
                         </div>
                       )}
                       <div className="rounded-xl px-4 py-2 bg-transparent dark:bg-transparent">
-                        <p className="whitespace-pre-wrap text-gray-900 dark:text-gray-100">{message.content}</p>
-                        
+                        {/* Render parsed content with sources */}
+                        {(() => {
+                          const { parts, sources } = parseSourcesInText(message.content);
+                          return (
+                            <>
+                              <span className="whitespace-pre-wrap text-gray-900 dark:text-gray-100">
+                                {parts.map((part, idx) =>
+                                  part.type === 'text'
+                                    ? part.value
+                                    : <a key={part.value + idx} href={part.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">[{part.index}]</a>
+                                )}
+                              </span>
+                              {sources.length > 0 && (
+                                <div className="mt-2 text-xs text-gray-500">
+                                  {sources.map(src => (
+                                    <div key={src.url}>
+                                      [{src.index}]: <a href={src.url} target="_blank" rel="noopener noreferrer" className="underline">{src.url}</a>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
+                        {/* End parsed content */}
                         {message.images && message.images.length > 0 && (
                           <div className="mt-4 space-y-4">
                             {message.images.map((image, imageIndex) => (

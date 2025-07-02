@@ -6,7 +6,7 @@ export const DEFAULT_API_TIMEOUT = 90000
 
 // /api/chat
 export const API_ENDPOINTS = {
-  chat: `${API_BASE_URL}/chat`,  // Main chat endpoint (updated from /query)
+  chat: `${API_BASE_URL}/chat`,  // Main chat endpoint
   upload: `${API_BASE_URL}/upload`,  // File upload endpoint
   health: `${API_BASE_URL}/health`,  // Health check endpoint
 }
@@ -18,7 +18,7 @@ export interface ImageResponse {
 }
 
 export interface ChatResponse {
-  answer: string;
+  response: string;  // Updated to match FastAPI response
   images?: ImageResponse[];
   query_language?: string;
   query_time_ms?: number;
@@ -33,9 +33,10 @@ export interface UploadFileResponse {
   url: string;
 }
 
+// Updated to match FastAPI ChatRequest model
 export interface AssistantQueryBody {
-  question: string;
-  history?: ChatHistoryItem[] | null;
+  message: string;  // Changed from 'question' to 'message'
+  history: string;  // Changed to string format as per FastAPI
 }
 
 // Test if the backend is accessible
@@ -60,10 +61,6 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
   try {
     console.log('Sending request to:', endpoint);
     console.log('Request body:', options.body);
-
-      // Create an AbortController to handle timeout
-    // const controller = new AbortController();
-    // const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     // Create AbortController for timeout
     const controller = new AbortController();
@@ -100,7 +97,7 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
       responseData = await response.json();
     } catch (e) {
       console.error('Error parsing JSON response:', e);
-      return { answer: "Sorry, there was an error processing the response from the server." };
+      return { response: "Sorry, there was an error processing the response from the server." };
     }
     
     console.log('Response data:', responseData);
@@ -114,7 +111,7 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
     
     // Handle specific error types
     if (error instanceof Error && error.name === 'AbortError') {
-      return { answer: "The request took too long and was aborted. The server might be busy." };
+      return { response: "The request took too long and was aborted. The server might be busy." };
     }
     
     // Handle connection reset errors specifically
@@ -122,13 +119,13 @@ export const fetchApi = async (endpoint: string, options: RequestInit = {}) => {
        (error.message.includes('socket hang up') || 
         error.message.includes('ECONNRESET'))) {
       return { 
-        answer: "The connection was interrupted while the server was processing your request. " +
+        response: "The connection was interrupted while the server was processing your request. " +
                 "The answer may have been too complex or the server might be overloaded. " +
                 "Please try a simpler question or try again later."
       };
     }
     
     // Return a user-friendly error rather than throwing
-    return { answer: "Sorry, there was an error connecting to the server. Please try again later." };
+    return { response: "Sorry, there was an error connecting to the server. Please try again later." };
   }
 } 
