@@ -3,6 +3,16 @@ export const API_BASE_URL = '/api'
 
 export const DEFAULT_API_TIMEOUT = 90000
 
+// Demo mode for deployments without backend
+export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
+
+// Mock responses for demo mode
+export const DEMO_RESPONSES = [
+  "Here are some Van Gogh exhibition posters from Switzerland [POSTER_IMAGE: https://ccsa.admin.ch/posters/SNL_1992_343.jpg]. This exhibition showcased his work [PRIMARY_SOURCE: https://nb-posters.primo.exlibrisgroup.com/discovery/fulldisplay] from 1973.",
+  "The Vincent van Gogh collection [POSTER_IMAGE: https://ccsa.admin.ch/posters/SNL_EXPO_2459.jpg] features drawings and watercolors. More details [PRIMARY_SOURCE: https://nb-posters.primo.exlibrisgroup.com/discovery/fulldisplay] can be found in the archives.",
+  "This poster [POSTER_IMAGE: https://ccsa.admin.ch/posters/SNL_EXPO_2451.jpg] represents paintings from the Stedelijk Museum Amsterdam. The exhibition [PRIMARY_SOURCE: https://nb-posters.primo.exlibrisgroup.com/discovery/fulldisplay] ran from October to November 1954.",
+  "The Fondation Pierre Gianadda exhibition [POSTER_IMAGE: https://ccsa.admin.ch/posters/VSBCVS_B5151.jpg] in Martigny featured Van Gogh's work. Historical context [PRIMARY_SOURCE: https://nb-posters.primo.exlibrisgroup.com/discovery/fulldisplay] is available in the documentation."
+]
 
 // /api/chat
 export const API_ENDPOINTS = {

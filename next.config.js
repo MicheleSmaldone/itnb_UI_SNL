@@ -4,8 +4,8 @@ require('dotenv').config();
 const nextConfig = {
   reactStrictMode: true,
   async rewrites() {
-    // Use the Docker bridge network IP to access host
-    const backendUrl = process.env.BACKEND_URL || 'http://localhost:8000';
+    // Use production backend URL by default, allow override via env var
+    const backendUrl = process.env.BACKEND_URL || 'https://backend-concierge-itnb.pub.production.kvant.cloud';
     console.log(`Using backend URL: ${backendUrl}`);
     
     return [

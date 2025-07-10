@@ -379,20 +379,54 @@ export function ChatInterface({ chatId = null }: ChatInterfaceProps) {
                         </div>
                       )}
                       <div className="rounded-xl px-4 py-2 bg-transparent dark:bg-transparent">
-                        {/* Render parsed content with sources */}
+                        {/* Render parsed content with sources and images */}
                         {(() => {
-                          const { parts, sources } = parseSourcesInText(message.content);
+                          const { parts, sources, images } = parseSourcesInText(message.content);
                           return (
                             <>
-                              <span className="whitespace-pre-wrap text-gray-900 dark:text-gray-100">
-                                {parts.map((part, idx) =>
-                                  part.type === 'text'
-                                    ? part.value
-                                    : <a key={part.value + idx} href={part.value} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">[{part.index}]</a>
-                                )}
-                              </span>
+                              <div className="whitespace-pre-wrap text-gray-900 dark:text-gray-100">
+                                {parts.map((part, idx) => {
+                                  if (part.type === 'text') {
+                                    return <span key={idx}>{part.value}</span>;
+                                  } else if (part.type === 'link') {
+                                    return (
+                                      <a 
+                                        key={part.value + idx} 
+                                        href={part.value} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="text-blue-600 underline"
+                                      >
+                                        [{part.index}]
+                                      </a>
+                                    );
+                                  } else if (part.type === 'image') {
+                                    return (
+                                      <div key={part.value + idx} className="my-4 inline-block">
+                                        <img 
+                                          src={part.value}
+                                          alt={`Poster image ${part.index}`}
+                                          className="max-w-full h-auto rounded-lg shadow-md border border-gray-200 dark:border-gray-700"
+                                          style={{ maxHeight: '400px', width: 'auto' }}
+                                          onError={(e) => {
+                                            // Fallback if image fails to load
+                                            const target = e.target as HTMLImageElement;
+                                            target.style.display = 'none';
+                                            const fallback = document.createElement('div');
+                                            fallback.className = 'text-red-500 text-sm italic';
+                                            fallback.textContent = `[Image failed to load: ${part.value}]`;
+                                            target.parentNode?.insertBefore(fallback, target);
+                                          }}
+                                        />
+                                      </div>
+                                    );
+                                  }
+                                  return null;
+                                })}
+                              </div>
                               {sources.length > 0 && (
                                 <div className="mt-2 text-xs text-gray-500">
+                                  <div className="font-medium mb-1">Sources:</div>
                                   {sources.map(src => (
                                     <div key={src.url}>
                                       [{src.index}]: <a href={src.url} target="_blank" rel="noopener noreferrer" className="underline">{src.url}</a>
