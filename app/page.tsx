@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { MessageSquare, BarChart, LogOut, PlusCircle, Trash2, Edit, MoreVertical } from "lucide-react"
+import { MessageSquare, BarChart, LogOut, PlusCircle, Trash2, Edit, MoreVertical, MoreHorizontal, Moon, Sun, User } from "lucide-react"
 import { ChatInterface } from "@/components/chat/chat-interface"
 import { AnalyticsDashboard } from "@/components/analytics/analytics-dashboard"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -50,7 +50,7 @@ export default function Home() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [chatToDelete, setChatToDelete] = useState<Chat | null>(null)
   const router = useRouter()
-  const { theme } = useTheme()
+  const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
   // Check authentication on mount and load chats
@@ -182,6 +182,30 @@ export default function Home() {
     setChatToDelete(null)
   }
 
+  const handleClearChatHistory = () => {
+    if (!activeChatId) return
+    
+    // Create default message for the active chat
+    const defaultMessage = {
+      role: "assistant" as const,
+      content: "Hello! I'm ITNB's Sovereign Concierge. How can I help you today?",
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+    
+    // Clear chat messages for the current chat ID
+    const chatStorageKey = `chat_${activeChatId}`
+    localStorage.setItem(chatStorageKey, JSON.stringify([defaultMessage]))
+    
+    // Force refresh of the chat interface by updating the chat's lastUpdated timestamp
+    setChats(prevChats => 
+      prevChats.map(chat => 
+        chat.id === activeChatId 
+          ? { ...chat, lastUpdated: new Date().toISOString() } 
+          : chat
+      )
+    )
+  }
+
   // Format date for display in sidebar
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -207,17 +231,43 @@ export default function Home() {
             </div>
           
           </div>
-          <div className="flex items-center gap-4">
-            <button className="font-montserrat text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white">
-              Manager Account
-            </button>
-            <ThemeToggle />
-            <button 
-              onClick={handleLogout}
-              className="text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white transition-colors"
-            >
-              <LogOut className="h-5 w-5" />
-            </button>
+          <div className="flex items-center">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-white"
+                >
+                  <MoreHorizontal className="h-5 w-5" />
+                  <span className="sr-only">Menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem className="font-montserrat">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Manager Account</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+                  {mounted && theme === "dark" ? (
+                    <Sun className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Moon className="mr-2 h-4 w-4" />
+                  )}
+                  <span>{mounted && theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+                </DropdownMenuItem>
+                {activeTab === "chat" && (
+                  <DropdownMenuItem onClick={handleClearChatHistory}>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    <span>Clear Chat</span>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </nav>
 
@@ -319,9 +369,12 @@ export default function Home() {
           </Sidebar>
 
           <main className="flex-1 overflow-hidden">
-            <div className="h-full overflow-auto">
+            <div className="h-full overflow-auto custom-scrollbar">
               {activeTab === "chat" ? (
-                <ChatInterface chatId={activeChatId} />
+                <ChatInterface 
+                  key={activeChatId ? `${activeChatId}-${chats.find(c => c.id === activeChatId)?.lastUpdated}` : 'no-chat'} 
+                  chatId={activeChatId} 
+                />
               ) : (
                 <AnalyticsDashboard />
               )}

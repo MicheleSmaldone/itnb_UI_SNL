@@ -125,7 +125,7 @@ export function Sidebar({ className, children }: React.HTMLAttributes<HTMLDivEle
           className
         )}
       >
-        <div className="h-full overflow-hidden relative z-10">
+        <div className="h-full overflow-y-auto custom-scrollbar relative z-10">
           {children}
         </div>
       </aside>

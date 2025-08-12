@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import { Send, ArrowDown, ArrowRight, Paperclip, Upload, Trash2, ThumbsUp, ThumbsDown, Copy } from "lucide-react"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { FileUpload } from "./file-upload"
+import { WelcomeCard } from "./welcome-card"
 import { API_ENDPOINTS, fetchApi, ChatResponse, ChatHistoryItem, UploadFileResponse, ImageResponse } from "@/app/config/api"
 import { parseSourcesInText } from '@/lib/utils'
 
@@ -281,22 +282,7 @@ export function ChatInterface({ chatId = null }: ChatInterfaceProps) {
     setIsDraggingGlobal(false)
   }
 
-  // Add a function to clear chat history
-  const clearChatHistory = () => {
-    const defaultMessage: Message = {
-      role: "assistant" as const,
-      content: "Hello! I'm ITNB's Sovereign Concierge. How can I help you today?",
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    };
-    
-    setMessages([defaultMessage]);
-    
-    // Clear chat messages for the current chat ID
-    if (chatId) {
-      const chatStorageKey = `chat_${chatId}`;
-      localStorage.setItem(chatStorageKey, JSON.stringify([defaultMessage]));
-    }
-  }
+
 
   const copyMessageToClipboard = (content: string) => {
     navigator.clipboard.writeText(content)
@@ -310,39 +296,35 @@ export function ChatInterface({ chatId = null }: ChatInterfaceProps) {
   }
 
   return (
-    <div className="flex justify-center w-full h-full">
-      <div 
-        className="relative flex h-full max-w-6xl w-full flex-col overflow-hidden"
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-      >
-        {/* Show overlay when file is being dragged */}
-        {isDraggingGlobal && !showUpload && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="rounded-xl bg-white p-6 shadow-lg dark:bg-gray-800">
-              <div className="flex items-center gap-2 text-[#333333]">
-                <Upload className="h-6 w-6" />
-                <span className="text-lg font-medium">Drop your file here</span>
-              </div>
+    <div 
+      className="relative flex h-full w-full flex-col overflow-hidden"
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      {/* Show overlay when file is being dragged */}
+      {isDraggingGlobal && !showUpload && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="rounded-xl bg-white p-6 shadow-lg dark:bg-gray-800">
+            <div className="flex items-center gap-2 text-[#333333]">
+              <Upload className="h-6 w-6" />
+              <span className="text-lg font-medium">Drop your file here</span>
             </div>
           </div>
-        )}
-        
-        <div className="flex flex-row items-center justify-end py-2 px-4">
-          <button
-            onClick={clearChatHistory}
-            className="flex items-center gap-1 rounded-lg px-2 py-1 text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors"
-            title="Clear chat history"
-          >
-            <Trash2 className="h-4 w-4" />
-            <span className="text-sm">Clear chat</span>
-          </button>
         </div>
-        
-        <div className="flex-1 overflow-y-auto p-6 pb-48">
-          <div className="max-w-4xl mx-auto w-full space-y-4">
+      )}
+      
+
+      
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-6 pb-48">
+        <div className="max-w-4xl mx-auto w-full space-y-4">
+            {/* Show welcome card only for new chats or when there's only the default assistant message */}
+            {messages.length === 1 && messages[0]?.role === "assistant" && messages[0]?.content.includes("Hello! I'm ITNB's Sovereign Concierge") && (
+              <div className="mb-8">
+                <WelcomeCard />
+              </div>
+            )}
             {messages.map((message, i) => (
               <div
                 key={i}
@@ -479,12 +461,12 @@ export function ChatInterface({ chatId = null }: ChatInterfaceProps) {
               </div>
             )}
             <div ref={messagesEndRef} />
-          </div>
         </div>
+      </div>
 
-        {/* Replace the CardFooter with a floating input container */}
-        <div className="absolute bottom-6 left-0 right-0 flex justify-center">
-          <div className="max-w-4xl w-[95%] bg-white/50 dark:bg-[#1a1a1a]/50 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 transition-all hover:shadow-xl hover:-translate-y-0.5 transform duration-300">
+      {/* Replace the CardFooter with a floating input container */}
+      <div className="absolute bottom-6 left-0 right-0 flex justify-center">
+        <div className="max-w-4xl w-[95%] bg-white/50 dark:bg-[#1a1a1a]/50 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 transition-all hover:shadow-xl hover:-translate-y-0.5 transform duration-300">
             <div className="flex w-full flex-col gap-3 p-3">
               {showUpload && (
                 <FileUpload
@@ -509,7 +491,7 @@ export function ChatInterface({ chatId = null }: ChatInterfaceProps) {
                     onKeyDown={handleKeyDown}
                     placeholder="Ask anything to your Sovereign Concierge..."
                     rows={1}
-                    className="w-full min-h-[40px] max-h-[150px] resize-none rounded-xl border border-gray-200 bg-white/60 dark:bg-gray-800/80 px-4 py-2 text-gray-900 transition-all focus:border-[#333333] focus:outline-none focus:ring-1 focus:ring-[#333333] dark:border-gray-800 dark:text-gray-100"
+                    className="w-full min-h-[40px] max-h-[150px] resize-none rounded-xl border border-gray-200 bg-white/60 dark:bg-gray-800/80 px-4 py-2 text-gray-900 transition-all focus:border-[#333333] focus:outline-none focus:ring-1 focus:ring-[#333333] dark:border-gray-800 dark:text-gray-100 hide-scrollbar"
                     style={{
                       lineHeight: '1.5',
                       overflowY: 'auto'
@@ -544,7 +526,6 @@ export function ChatInterface({ chatId = null }: ChatInterfaceProps) {
                 </button>
               </div>
             </div>
-          </div>
         </div>
       </div>
     </div>
