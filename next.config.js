@@ -6,8 +6,8 @@ const nextConfig = {
   async rewrites() {
     // Use local FastAPI backend by default, allow override via env var
     // In Docker environment, the backend is accessible via Docker host IP
-    // const backendUrl = process.env.BACKEND_URL || 'https://backend-concierge-itnb.pub.production.kvant.cloud';
-    const backendUrl = process.env.BACKEND_URL || 'http://172.17.0.1:8000';
+    const backendUrl = process.env.BACKEND_URL // || 'https://backend-concierge-itnb.pub.production.kvant.cloud';
+    //const backendUrl ='http://172.17.0.1:8000';
     console.log(`Using backend URL: ${backendUrl}`);
     
     return [
