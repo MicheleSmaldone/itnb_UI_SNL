@@ -322,7 +322,7 @@ export function ChatInterface({ chatId = null }: ChatInterfaceProps) {
             {/* Show welcome card only for new chats or when there's only the default assistant message */}
             {messages.length === 1 && messages[0]?.role === "assistant" && messages[0]?.content.includes("Hello! I'm ITNB's Sovereign Concierge") && (
               <div className="mb-8">
-                <WelcomeCard />
+                
               </div>
             )}
             {messages.map((message, i) => (

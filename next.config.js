@@ -4,8 +4,10 @@ require('dotenv').config();
 const nextConfig = {
   reactStrictMode: true,
   async rewrites() {
-    // Use production backend URL by default, allow override via env var
-    const backendUrl = process.env.BACKEND_URL || 'https://backend-concierge-itnb.pub.production.kvant.cloud';
+    // Use local FastAPI backend by default, allow override via env var
+    // In Docker environment, the backend is accessible via Docker host IP
+    // const backendUrl = process.env.BACKEND_URL || 'https://backend-concierge-itnb.pub.production.kvant.cloud';
+    const backendUrl = process.env.BACKEND_URL || 'http://172.17.0.1:8000';
     console.log(`Using backend URL: ${backendUrl}`);
     
     return [
