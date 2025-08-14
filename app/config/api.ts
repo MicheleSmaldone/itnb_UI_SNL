@@ -6,6 +6,9 @@ export const DEFAULT_API_TIMEOUT = 90000
 // Demo mode for deployments without backend
 export const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === 'true'
 
+// Watson Orchestrate configuration
+export const WATSON_ORCHESTRATE_URL = 'https://api.eu-central-1.dl.watson-orchestrate.ibm.com/instances/20250721-1343-0678-809e-efdc3ba9c703/v1/orchestrate/56778937-70e3-4316-b8b3-e96df730fd10/chat/completions'
+
 // Mock responses for demo mode
 export const DEMO_RESPONSES = [
   "Here are some Van Gogh exhibition posters from Switzerland [POSTER_IMAGE: https://ccsa.admin.ch/posters/SNL_1992_343.jpg]. This exhibition showcased his work [PRIMARY_SOURCE: https://nb-posters.primo.exlibrisgroup.com/discovery/fulldisplay] from 1973.",
