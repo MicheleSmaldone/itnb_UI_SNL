@@ -15,5 +15,5 @@
 
     "postStartCommand": "nginx",
   
-    "appPort": "8081:80"
+    "appPort": "8082:80"
   }
